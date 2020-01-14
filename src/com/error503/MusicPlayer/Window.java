@@ -5,9 +5,12 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.Toolkit;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -16,6 +19,7 @@ import javax.imageio.ImageIO;
 import javax.sound.sampled.LineUnavailableException;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -24,21 +28,26 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
+import javax.swing.KeyStroke;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 
-public class Window extends JFrame implements ActionListener {
+public class Window extends JFrame implements ActionListener, ChangeListener {
 
 	private JFrame f = new JFrame();
-	
+
 	private JMenuBar bar = new JMenuBar();
 
 	private JMenu file = new JMenu("File");
 	private JMenu window = new JMenu("Window");
 
 	private JMenuItem open = new JMenuItem("Open...");
+	private JCheckBoxMenuItem repeat = new JCheckBoxMenuItem("Repeat");
+
 	private JMenuItem credits = new JMenuItem("Credits");
 	private JMenuItem exit = new JMenuItem("Exit");
 
@@ -48,7 +57,7 @@ public class Window extends JFrame implements ActionListener {
 	private JButton reverse = new JButton();
 	private JButton forward = new JButton();
 
-	private JLabel time = new JLabel(" ", JLabel.CENTER);
+	private JLabel time = new JLabel("--:-- / --:--", JLabel.CENTER);
 
 	private JProgressBar progress = new JProgressBar(JProgressBar.HORIZONTAL, 0);
 
@@ -73,11 +82,15 @@ public class Window extends JFrame implements ActionListener {
 			Image forw_image = ImageIO.read(this.getClass().getResource("resources/forward.png"));
 			ImageIcon forw_icon = new ImageIcon(forw_image.getScaledInstance(50, 50, Image.SCALE_SMOOTH));
 
+			Image repeat_image = ImageIO.read(this.getClass().getResource("resources/repeat.png"));
+			ImageIcon repeat_icon = new ImageIcon(repeat_image.getScaledInstance(20, 20, Image.SCALE_SMOOTH));
+
 			play.setIcon(play_icon);
 			pause.setIcon(pause_icon);
 			stop.setIcon(stop_icon);
 			reverse.setIcon(rev_icon);
 			forward.setIcon(forw_icon);
+			repeat.setIcon(repeat_icon);
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -86,7 +99,15 @@ public class Window extends JFrame implements ActionListener {
 		setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
 
+		open.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
+		credits.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
+		exit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.CTRL_MASK));
+		file.setMnemonic(KeyEvent.VK_F);
+		window.setMnemonic(KeyEvent.VK_W);
+
 		file.add(open);
+		file.addSeparator();
+		file.add(repeat);
 
 		window.add(credits);
 		window.add(exit);
@@ -105,63 +126,67 @@ public class Window extends JFrame implements ActionListener {
 		stop.addActionListener(this);
 		reverse.addActionListener(this);
 		forward.addActionListener(this);
-
+		repeat.addItemListener(new ItemListener() {
+			
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				mp.toggleRepeat();
+			}
+		});
+		
 		progress.setPreferredSize(new Dimension(150, 30));
 
-		play.setPreferredSize(new Dimension(50, 50));
-		pause.setPreferredSize(new Dimension(50, 50));
-		stop.setPreferredSize(new Dimension(50, 50));
-		reverse.setPreferredSize(new Dimension(50, 50));
-		forward.setPreferredSize(new Dimension(50, 50));
-
-		play.setMultiClickThreshhold(1L);
-		pause.setMultiClickThreshhold(1L);
-		stop.setMultiClickThreshhold(1L);
-		reverse.setMultiClickThreshhold(1L);
-		forward.setMultiClickThreshhold(1L);
+		play.setPreferredSize(new Dimension(55, 55));
+		pause.setPreferredSize(new Dimension(55, 55));
+		stop.setPreferredSize(new Dimension(55, 55));
+		reverse.setPreferredSize(new Dimension(55, 55));
+		forward.setPreferredSize(new Dimension(55, 55));
 
 		c.fill = GridBagConstraints.BOTH;
 
 		c.gridx = 0;
 		c.gridy = 0;
 		c.weightx = 1.0;
-		c.weighty = 1.0;
-		c.insets = new Insets(10, 10, 10, 10);
-		add(reverse, c);
+		c.insets = new Insets(5, 5, 5, 5);
+		add(play, c);
 
 		c.gridx = 1;
 		c.gridy = 0;
 		c.weightx = 1.0;
-		c.insets = new Insets(10, 10, 10, 10);
-		add(play, c);
+		c.insets = new Insets(5, 5, 5, 5);
+		add(pause, c);
 
 		c.gridx = 2;
 		c.gridy = 0;
 		c.weightx = 1.0;
-		c.insets = new Insets(10, 10, 10, 10);
-		add(pause, c);
-
-		c.gridx = 3;
-		c.gridy = 0;
-		c.weightx = 1.0;
-		c.insets = new Insets(10, 10, 10, 10);
+		c.insets = new Insets(5, 5, 5, 5);
 		add(stop, c);
 
-		c.gridx = 4;
-		c.gridy = 0;
+		c.gridx = 0;
+		c.gridy = 1;
 		c.weightx = 1.0;
-		c.insets = new Insets(10, 10, 10, 10);
-		add(forward, c);
+		c.weighty = 1.0;
+		c.insets = new Insets(5, 5, 5, 5);
+		add(reverse, c);
 
+		c.gridx = 1;
+		c.gridy = 1;
+		c.weightx = 1.0;
+		c.insets = new Insets(5, 5, 5, 5);
+		add(forward, c);
+		/*
+		 * c.gridx = 2; c.gridy = 1; c.weightx = 1.0; c.insets = new Insets(5, 5, 5, 5);
+		 * add(repeat, c);
+		 */
 		c.weightx = 0;
 		c.gridwidth = 5;
 		c.gridx = 0;
-		c.gridy = 1;
+		c.gridy = 2;
 		c.insets = new Insets(5, 5, 5, 5);
 		add(progress, c);
 
 		c.gridx = 0;
-		c.gridy = 2;
+		c.gridy = 3;
 		c.weightx = 0;
 		c.weighty = 0;
 		c.gridheight = 0;
@@ -174,6 +199,7 @@ public class Window extends JFrame implements ActionListener {
 		stop.setEnabled(false);
 		reverse.setEnabled(false);
 		forward.setEnabled(false);
+		repeat.setEnabled(false);
 
 		pack();
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -216,7 +242,7 @@ public class Window extends JFrame implements ActionListener {
 
 					String extension = Utils.getExtension(f);
 					if (extension != null) {
-						if (extension.equals(Utils.wav) || extension.equals(Utils.mp3)) {
+						if (extension.equals(Utils.wav)) {
 							return true;
 						} else {
 							return false;
@@ -236,6 +262,7 @@ public class Window extends JFrame implements ActionListener {
 				stop.setEnabled(true);
 				reverse.setEnabled(true);
 				forward.setEnabled(true);
+				repeat.setEnabled(true);
 			} catch (IOException | LineUnavailableException err) {
 				err.printStackTrace();
 			}
@@ -252,8 +279,11 @@ public class Window extends JFrame implements ActionListener {
 			stop.setEnabled(false);
 			reverse.setEnabled(false);
 			forward.setEnabled(false);
+			repeat.setEnabled(false);
 			time.setText("--:-- / --:--");
 			mp.stop();
+			progress.setValue(0);
+			progress.setMaximum(0);
 		} else if (obj == exit) {
 			int resp = JOptionPane.showConfirmDialog(null, "Do you really want to quit?", "Quit",
 					JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
@@ -270,6 +300,9 @@ public class Window extends JFrame implements ActionListener {
 			long len_min = TimeUnit.MICROSECONDS.toMinutes(mp.getLenght());
 			long pos_sec = TimeUnit.MICROSECONDS.toSeconds(mp.getPosition());
 			long len_sec = TimeUnit.MICROSECONDS.toSeconds(mp.getLenght());
+			if (pos_min == len_min && pos_sec == len_sec) {
+				time.setText("00:00 / 00:00");
+			}
 			if (pos_sec % 60 < 10) {
 				time.setText(pos_min % 60 + ":0" + pos_sec % 60 + " / " + len_min % 60 + ":" + len_sec % 60);
 			} else if (len_sec % 60 < 10) {
@@ -285,6 +318,13 @@ public class Window extends JFrame implements ActionListener {
 			mp.reverse();
 		}
 
+	}
+
+	@Override
+	public void stateChanged(ChangeEvent e) {
+
+		Object obj = e.getSource();
+		
 	}
 
 }
