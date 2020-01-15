@@ -32,11 +32,11 @@ import javax.swing.KeyStroke;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 
-public class Window extends JFrame implements ActionListener, ChangeListener {
+@SuppressWarnings("serial")
+
+public class Window extends JFrame implements ActionListener {
 
 	private JFrame f = new JFrame();
 
@@ -101,9 +101,8 @@ public class Window extends JFrame implements ActionListener, ChangeListener {
 
 		open.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
 		credits.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
-		exit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.CTRL_MASK));
-		file.setMnemonic(KeyEvent.VK_F);
-		window.setMnemonic(KeyEvent.VK_W);
+		repeat.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, ActionEvent.CTRL_MASK));
+		exit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK));
 
 		file.add(open);
 		file.addSeparator();
@@ -127,13 +126,13 @@ public class Window extends JFrame implements ActionListener, ChangeListener {
 		reverse.addActionListener(this);
 		forward.addActionListener(this);
 		repeat.addItemListener(new ItemListener() {
-			
+
 			@Override
 			public void itemStateChanged(ItemEvent e) {
 				mp.toggleRepeat();
 			}
 		});
-		
+
 		progress.setPreferredSize(new Dimension(150, 30));
 
 		play.setPreferredSize(new Dimension(55, 55));
@@ -147,37 +146,34 @@ public class Window extends JFrame implements ActionListener, ChangeListener {
 		c.gridx = 0;
 		c.gridy = 0;
 		c.weightx = 1.0;
-		c.insets = new Insets(5, 5, 5, 5);
-		add(play, c);
-
-		c.gridx = 1;
-		c.gridy = 0;
-		c.weightx = 1.0;
-		c.insets = new Insets(5, 5, 5, 5);
-		add(pause, c);
-
-		c.gridx = 2;
-		c.gridy = 0;
-		c.weightx = 1.0;
-		c.insets = new Insets(5, 5, 5, 5);
-		add(stop, c);
-
-		c.gridx = 0;
-		c.gridy = 1;
-		c.weightx = 1.0;
 		c.weighty = 1.0;
 		c.insets = new Insets(5, 5, 5, 5);
 		add(reverse, c);
 
 		c.gridx = 1;
-		c.gridy = 1;
+		c.gridy = 0;
+		c.weightx = 1.0;
+		c.insets = new Insets(5, 5, 5, 5);
+		add(play, c);
+
+		c.gridx = 2;
+		c.gridy = 0;
+		c.weightx = 1.0;
+		c.insets = new Insets(5, 5, 5, 5);
+		add(pause, c);
+
+		c.gridx = 3;
+		c.gridy = 0;
+		c.weightx = 1.0;
+		c.insets = new Insets(5, 5, 5, 5);
+		add(stop, c);
+
+		c.gridx = 4;
+		c.gridy = 0;
 		c.weightx = 1.0;
 		c.insets = new Insets(5, 5, 5, 5);
 		add(forward, c);
-		/*
-		 * c.gridx = 2; c.gridy = 1; c.weightx = 1.0; c.insets = new Insets(5, 5, 5, 5);
-		 * add(repeat, c);
-		 */
+
 		c.weightx = 0;
 		c.gridwidth = 5;
 		c.gridx = 0;
@@ -204,6 +200,7 @@ public class Window extends JFrame implements ActionListener, ChangeListener {
 		pack();
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		setVisible(true);
+		setTitle("Music Player");
 
 		timer = new Timer(100, this);
 		timer.setRepeats(true);
@@ -318,13 +315,6 @@ public class Window extends JFrame implements ActionListener, ChangeListener {
 			mp.reverse();
 		}
 
-	}
-
-	@Override
-	public void stateChanged(ChangeEvent e) {
-
-		Object obj = e.getSource();
-		
 	}
 
 }

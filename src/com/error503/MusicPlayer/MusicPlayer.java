@@ -18,7 +18,7 @@ public class MusicPlayer {
 
 	long lenght;
 	long position;
-	
+
 	int loop;
 
 	public MusicPlayer(String filePath) throws LineUnavailableException, IOException {
@@ -28,7 +28,7 @@ public class MusicPlayer {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		clip = AudioSystem.getClip();
 
 		clip.open(audioInputStream);
@@ -57,15 +57,15 @@ public class MusicPlayer {
 	public long getLenght() {
 		return lenght;
 	}
-	
+
 	public boolean isActive() {
 		return clip.isOpen();
 	}
-	
+
 	public boolean isPlaying() {
 		return clip.isRunning();
 	}
-	
+
 	public void toggleRepeat() {
 		if (loop == Clip.LOOP_CONTINUOUSLY) {
 			loop = 0;
@@ -78,8 +78,11 @@ public class MusicPlayer {
 	public void refresh() {
 		new Thread(new Runnable() {
 			public void run() {
-				position = clip.getMicrosecondPosition();
-				
+				if (clip.getMicrosecondPosition() > lenght) {
+					position = clip.getMicrosecondPosition() - clip.getMicrosecondLength();
+				} else {
+					position = clip.getMicrosecondPosition();
+				}
 			}
 		}).start();
 	}
