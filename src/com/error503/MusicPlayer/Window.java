@@ -211,7 +211,6 @@ public class Window extends JFrame implements ActionListener, WindowListener {
 
 		// Standard JFrame part: size, default close operation, visibility, title, and blocking of resizing
 		pack();
-		System.out.println(getSize());
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		setVisible(true);
 		setTitle("Music Player");
@@ -276,7 +275,7 @@ public class Window extends JFrame implements ActionListener, WindowListener {
 			// Showing the file chooser
 			chooser.showOpenDialog(f);
 
-			// Opening the 
+			// Opening the seleted file
 			try {
 				mp = new MusicPlayer(chooser.getSelectedFile().getAbsolutePath());
 				play.setEnabled(true);
@@ -291,11 +290,11 @@ public class Window extends JFrame implements ActionListener, WindowListener {
 
 			timer.start();
 
-		} else if (obj == play) {
+		} else if (obj == play) { // Playing / restarting
 			mp.start();
-		} else if (obj == pause) {
+		} else if (obj == pause) { // Pause
 			mp.pause();
-		} else if (obj == stop) {
+		} else if (obj == stop) { // Full stop, disables the control buttons and unloads the clip
 			play.setEnabled(false);
 			pause.setEnabled(false);
 			stop.setEnabled(false);
@@ -306,51 +305,52 @@ public class Window extends JFrame implements ActionListener, WindowListener {
 			mp.stop();
 			progress.setValue(0);
 			progress.setMaximum(0);
-		} else if (obj == exit) {
+		} else if (obj == exit) { // Exiting
 			int resp = JOptionPane.showConfirmDialog(null, "Do you really want to quit?", "Quit",
-					JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+					JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE); // Showing a confirm dialog
 
-			if (resp == JOptionPane.YES_OPTION) {
+			if (resp == JOptionPane.YES_OPTION) { // If the response is yes the program quits
 				System.exit(0);
 			}
 
-		} else if (obj == timer && mp.isActive()) {
+		} else if (obj == timer && mp.isActive()) { // Timer for controlling the progressbar
 			mp.refresh();
-			progress.setMaximum((int) mp.getLenght());
-			progress.setValue((int) mp.getPosition());
-			long pos_min = TimeUnit.MICROSECONDS.toMinutes(mp.getPosition());
-			long len_min = TimeUnit.MICROSECONDS.toMinutes(mp.getLenght());
-			long pos_sec = TimeUnit.MICROSECONDS.toSeconds(mp.getPosition());
-			long len_sec = TimeUnit.MICROSECONDS.toSeconds(mp.getLenght());
-			if (pos_min == len_min && pos_sec == len_sec) {
+			progress.setMaximum((int) mp.getLenght()); // Setting the maximum value for the progressbar
+			progress.setValue((int) mp.getPosition()); // Setting the curent value
+			long pos_min = TimeUnit.MICROSECONDS.toMinutes(mp.getPosition()); // Getting the position in minutes
+			long len_min = TimeUnit.MICROSECONDS.toMinutes(mp.getLenght()); // Getting the full lenght in minutes
+			long pos_sec = TimeUnit.MICROSECONDS.toSeconds(mp.getPosition()); // Getting the position in seconds
+			long len_sec = TimeUnit.MICROSECONDS.toSeconds(mp.getLenght()); // Getting the full lenght in seconds
+			if (pos_min == len_min && pos_sec == len_sec) { // If the clip's end is reached the timer resets back to zero
 				time.setText("00:00 / 00:00");
 			}
-			if (pos_sec % 60 < 10) {
+			if (pos_sec % 60 < 10) { // Displaying the current time with proper formatting
 				time.setText(pos_min % 60 + ":0" + pos_sec % 60 + " / " + len_min % 60 + ":" + len_sec % 60);
 			} else if (len_sec % 60 < 10) {
 				time.setText(pos_min % 60 + ":" + pos_sec % 60 + " / " + len_min % 60 + ":0" + len_sec % 60);
 			} else {
 				time.setText(pos_min % 60 + ":" + pos_sec % 60 + " / " + len_min % 60 + ":" + len_sec % 60);
 			}
-		} else if (obj == credits) {
+		} else if (obj == credits) { // Credits window
 			JOptionPane.showMessageDialog(null, "January 2020\nSimon Vargha", "Credits", JOptionPane.PLAIN_MESSAGE);
-		} else if (obj == forward) {
+		} else if (obj == forward) { // Forwarding the clip
 			mp.forward();
-		} else if (obj == reverse) {
+		} else if (obj == reverse) { // Reversing the clip
 			mp.reverse();
 		}
 
 	}
 
-	public void windowClosing(WindowEvent e) {
+	public void windowClosing(WindowEvent e) { // Listening for X press / alt+f4
 		int resp = JOptionPane.showConfirmDialog(null, "Do you really want to quit?", "Quit",
-				JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+				JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);  // Confirmation dialog
 		
 		if (resp == JOptionPane.YES_OPTION) {
-			System.exit(0);
+			System.exit(0); // Quitting
 		}
 	}
 	
+	// Unnecesary but mandatory event listeners
 	public void windowOpened(WindowEvent e) {}
 	public void windowClosed(WindowEvent e) {}
 	public void windowIconified(WindowEvent e) {}
