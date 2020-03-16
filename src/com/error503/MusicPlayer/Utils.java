@@ -1,10 +1,10 @@
 package com.error503.MusicPlayer;
  
 import java.io.File;
-import javax.swing.ImageIcon;
+
+// Helper file for file filtering
 
 public class Utils {
-    public final static String mp3 = "mp3";
     public final static String wav = "wav";
     
     public static String getExtension(File f) {
@@ -16,15 +16,5 @@ public class Utils {
             ext = s.substring(i+1).toLowerCase();
         }
         return ext;
-    }
-
-    protected static ImageIcon createImageIcon(String path) {
-        java.net.URL imgURL = Utils.class.getResource(path);
-        if (imgURL != null) {
-            return new ImageIcon(imgURL);
-        } else {
-            System.err.println("Couldn't find file: " + path);
-            return null;
-        }
     }
 }

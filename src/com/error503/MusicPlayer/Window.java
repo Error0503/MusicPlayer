@@ -11,6 +11,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -36,7 +38,7 @@ import javax.swing.filechooser.FileFilter;
 
 @SuppressWarnings("serial")
 
-public class Window extends JFrame implements ActionListener {
+public class Window extends JFrame implements ActionListener, WindowListener {
 
 	private JFrame f = new JFrame();
 
@@ -66,20 +68,21 @@ public class Window extends JFrame implements ActionListener {
 
 	Window() {
 
+		// Assigning icons to the buttons with scaling
 		try {
-			Image play_image = ImageIO.read(this.getClass().getResource("resources/play.png"));
+			Image play_image = ImageIO.read(this.getClass().getResource("resources/play.jpg"));
 			ImageIcon play_icon = new ImageIcon(play_image.getScaledInstance(50, 50, Image.SCALE_SMOOTH));
 
-			Image pause_image = ImageIO.read(this.getClass().getResource("resources/pause.png"));
+			Image pause_image = ImageIO.read(this.getClass().getResource("resources/pause.jpg"));
 			ImageIcon pause_icon = new ImageIcon(pause_image.getScaledInstance(50, 50, Image.SCALE_SMOOTH));
 
-			Image stop_image = ImageIO.read(this.getClass().getResource("resources/stop.png"));
+			Image stop_image = ImageIO.read(this.getClass().getResource("resources/stop.jpg"));
 			ImageIcon stop_icon = new ImageIcon(stop_image.getScaledInstance(50, 50, Image.SCALE_SMOOTH));
 
-			Image rev_image = ImageIO.read(this.getClass().getResource("resources/backward.png"));
+			Image rev_image = ImageIO.read(this.getClass().getResource("resources/backward.jpg"));
 			ImageIcon rev_icon = new ImageIcon(rev_image.getScaledInstance(50, 50, Image.SCALE_SMOOTH));
 
-			Image forw_image = ImageIO.read(this.getClass().getResource("resources/forward.png"));
+			Image forw_image = ImageIO.read(this.getClass().getResource("resources/forward.jpg"));
 			ImageIcon forw_icon = new ImageIcon(forw_image.getScaledInstance(50, 50, Image.SCALE_SMOOTH));
 
 			Image repeat_image = ImageIO.read(this.getClass().getResource("resources/repeat.png"));
@@ -96,14 +99,17 @@ public class Window extends JFrame implements ActionListener {
 			e.printStackTrace();
 		}
 
+		// Layout declaration
 		setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
 
+		// Hot keys for menu bar items
 		open.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
 		credits.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
 		repeat.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, ActionEvent.CTRL_MASK));
 		exit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK));
 
+		// Filling the menu
 		file.add(open);
 		file.addSeparator();
 		file.add(repeat);
@@ -116,31 +122,36 @@ public class Window extends JFrame implements ActionListener {
 
 		setJMenuBar(bar);
 
+		// Menu items getting action listeners
 		open.addActionListener(this);
 		credits.addActionListener(this);
 		exit.addActionListener(this);
-
-		play.addActionListener(this);
-		pause.addActionListener(this);
-		stop.addActionListener(this);
-		reverse.addActionListener(this);
-		forward.addActionListener(this);
+		// repeat is a check box so it's state change should be listened for
 		repeat.addItemListener(new ItemListener() {
-
+			
 			@Override
 			public void itemStateChanged(ItemEvent e) {
 				mp.toggleRepeat();
 			}
 		});
 
+		// Action listeners to buttons
+		play.addActionListener(this);
+		pause.addActionListener(this);
+		stop.addActionListener(this);
+		reverse.addActionListener(this);
+		forward.addActionListener(this);
+
+		// Sizing components
 		progress.setPreferredSize(new Dimension(150, 30));
+		play.setPreferredSize(new Dimension(51, 51));
+		pause.setPreferredSize(new Dimension(51, 51));
+		stop.setPreferredSize(new Dimension(51, 51));
+		reverse.setPreferredSize(new Dimension(51, 51));
+		forward.setPreferredSize(new Dimension(51, 51));
 
-		play.setPreferredSize(new Dimension(55, 55));
-		pause.setPreferredSize(new Dimension(55, 55));
-		stop.setPreferredSize(new Dimension(55, 55));
-		reverse.setPreferredSize(new Dimension(55, 55));
-		forward.setPreferredSize(new Dimension(55, 55));
-
+		
+		// Adding all components with appropriate properties -> c
 		c.fill = GridBagConstraints.BOTH;
 
 		c.gridx = 0;
@@ -190,6 +201,7 @@ public class Window extends JFrame implements ActionListener {
 		c.insets = new Insets(0, 0, 0, 0);
 		add(time, c);
 
+		// All buttons are disable until the user chooses a file to be played
 		play.setEnabled(false);
 		pause.setEnabled(false);
 		stop.setEnabled(false);
@@ -197,17 +209,25 @@ public class Window extends JFrame implements ActionListener {
 		forward.setEnabled(false);
 		repeat.setEnabled(false);
 
+		// Standard JFrame part: size, default close operation, visibility, title, and blocking of resizing
 		pack();
+		System.out.println(getSize());
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		setVisible(true);
 		setTitle("Music Player");
+		setResizable(false);
+		addWindowListener(this);
 
+		// Declaring a timer that will be used to refresh the clip's info every 100 milliseconds
 		timer = new Timer(100, this);
 		timer.setRepeats(true);
 
+		// Setting the location of the window in the centre of the screen
 		setLocation((Toolkit.getDefaultToolkit().getScreenSize().width / 2) - (getSize().width / 2),
 				(Toolkit.getDefaultToolkit().getScreenSize().height / 2) - (getSize().height / 2));
 
+		// Assigning a look and feel
+		// On mac it uses it's own instead of win
 		try {
 			UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
@@ -216,14 +236,17 @@ public class Window extends JFrame implements ActionListener {
 		}
 	}
 
+	// Action listeners
 	public void actionPerformed(ActionEvent e) {
 
 		Object obj = e.getSource();
 
 		if (obj == open) {
 
+			// The file that will be played can be selected using Java built-in JFileChooser
 			JFileChooser chooser = new JFileChooser();
 
+			// Filtering for only .wav files
 			chooser.setFileFilter(new FileFilter() {
 
 				@Override
@@ -250,8 +273,10 @@ public class Window extends JFrame implements ActionListener {
 				}
 			});
 
+			// Showing the file chooser
 			chooser.showOpenDialog(f);
 
+			// Opening the 
 			try {
 				mp = new MusicPlayer(chooser.getSelectedFile().getAbsolutePath());
 				play.setEnabled(true);
@@ -316,5 +341,21 @@ public class Window extends JFrame implements ActionListener {
 		}
 
 	}
+
+	public void windowClosing(WindowEvent e) {
+		int resp = JOptionPane.showConfirmDialog(null, "Do you really want to quit?", "Quit",
+				JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+		
+		if (resp == JOptionPane.YES_OPTION) {
+			System.exit(0);
+		}
+	}
+	
+	public void windowOpened(WindowEvent e) {}
+	public void windowClosed(WindowEvent e) {}
+	public void windowIconified(WindowEvent e) {}
+	public void windowDeiconified(WindowEvent e) {}
+	public void windowActivated(WindowEvent e) {}
+	public void windowDeactivated(WindowEvent e) {}
 
 }
