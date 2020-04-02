@@ -135,4 +135,8 @@ public class MusicPlayer {
 		clip.setMicrosecondPosition(position + TimeUnit.SECONDS.toMicros(10));
 	}
 
+	public void setPosition(long pos) {
+		clip.setMicrosecondPosition(pos);
+	}
+
 }
