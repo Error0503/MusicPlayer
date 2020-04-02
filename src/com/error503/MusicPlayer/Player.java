@@ -1,5 +1,6 @@
 package com.error503.MusicPlayer;
 
+import com.error503.MusicPlayer.Utils;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -36,9 +37,11 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileFilter;
 
+import com.error503.MusicPlayer.MusicPlayer;
+
 @SuppressWarnings("serial")
 
-public class Window extends JFrame implements ActionListener, WindowListener {
+public class Player extends JFrame implements ActionListener, WindowListener {
 
 	private JFrame f = new JFrame();
 
@@ -48,6 +51,7 @@ public class Window extends JFrame implements ActionListener, WindowListener {
 	private JMenu window = new JMenu("Window");
 
 	private JMenuItem open = new JMenuItem("Open...");
+	private JMenuItem connect = new JMenuItem("Connect");
 	private JCheckBoxMenuItem repeat = new JCheckBoxMenuItem("Repeat");
 
 	private JMenuItem credits = new JMenuItem("Credits");
@@ -63,10 +67,12 @@ public class Window extends JFrame implements ActionListener, WindowListener {
 
 	private JProgressBar progress = new JProgressBar(JProgressBar.HORIZONTAL, 0);
 
+	private String path;
+
 	private Timer timer;
 	private MusicPlayer mp;
 
-	Window() {
+	public Player() {
 
 		// Assigning icons to the buttons with scaling
 		try {
@@ -105,12 +111,13 @@ public class Window extends JFrame implements ActionListener, WindowListener {
 
 		// Hot keys for menu bar items
 		open.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
-		credits.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
+		connect.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
 		repeat.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, ActionEvent.CTRL_MASK));
 		exit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK));
 
 		// Filling the menu
 		file.add(open);
+		file.add(connect);
 		file.addSeparator();
 		file.add(repeat);
 
@@ -124,11 +131,12 @@ public class Window extends JFrame implements ActionListener, WindowListener {
 
 		// Menu items getting action listeners
 		open.addActionListener(this);
+		connect.addActionListener(this);
 		credits.addActionListener(this);
 		exit.addActionListener(this);
 		// repeat is a check box so it's state change should be listened for
 		repeat.addItemListener(new ItemListener() {
-			
+
 			@Override
 			public void itemStateChanged(ItemEvent e) {
 				mp.toggleRepeat();
@@ -150,7 +158,6 @@ public class Window extends JFrame implements ActionListener, WindowListener {
 		reverse.setPreferredSize(new Dimension(51, 51));
 		forward.setPreferredSize(new Dimension(51, 51));
 
-		
 		// Adding all components with appropriate properties -> c
 		c.fill = GridBagConstraints.BOTH;
 
@@ -209,7 +216,8 @@ public class Window extends JFrame implements ActionListener, WindowListener {
 		forward.setEnabled(false);
 		repeat.setEnabled(false);
 
-		// Standard JFrame part: size, default close operation, visibility, title, and blocking of resizing
+		// Standard JFrame part: size, default close operation, visibility, title, and
+		// blocking of resizing
 		pack();
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		setVisible(true);
@@ -217,7 +225,8 @@ public class Window extends JFrame implements ActionListener, WindowListener {
 		setResizable(false);
 		addWindowListener(this);
 
-		// Declaring a timer that will be used to refresh the clip's info every 100 milliseconds
+		// Declaring a timer that will be used to refresh the clip's info every 100
+		// milliseconds
 		timer = new Timer(100, this);
 		timer.setRepeats(true);
 
@@ -276,20 +285,46 @@ public class Window extends JFrame implements ActionListener, WindowListener {
 			chooser.showOpenDialog(f);
 
 			// Opening the seleted file
-			try {
-				mp = new MusicPlayer(chooser.getSelectedFile().getAbsolutePath());
-				play.setEnabled(true);
-				pause.setEnabled(true);
-				stop.setEnabled(true);
-				reverse.setEnabled(true);
-				forward.setEnabled(true);
-				repeat.setEnabled(true);
-			} catch (IOException | LineUnavailableException err) {
-				err.printStackTrace();
+			if (mp == null) {
+				try {
+					path = chooser.getSelectedFile().getAbsolutePath();
+					mp = new MusicPlayer(path);
+					play.setEnabled(true);
+					pause.setEnabled(true);
+					stop.setEnabled(true);
+					reverse.setEnabled(true);
+					forward.setEnabled(true);
+					repeat.setEnabled(true);
+				} catch (IOException | LineUnavailableException err) {
+					err.printStackTrace();
+				}
+
+				timer.start();
+			} else {
+				try {
+					path = chooser.getSelectedFile().getAbsolutePath();
+					mp.kill();
+					mp.init(path);
+					play.setEnabled(true);
+					pause.setEnabled(true);
+					stop.setEnabled(true);
+					reverse.setEnabled(true);
+					forward.setEnabled(true);
+					repeat.setEnabled(true);
+				} catch (IOException | LineUnavailableException err) {
+					err.printStackTrace();
+				}
+				
+				timer.start();
 			}
-
-			timer.start();
-
+			
+		} else if (obj == connect) {
+			if (path == null) {
+				JOptionPane.showMessageDialog(null, "Please select a file before connecting", "Error",
+						JOptionPane.INFORMATION_MESSAGE);
+			} else {
+				new Connect(path, mp);
+			}
 		} else if (obj == play) { // Playing / restarting
 			mp.start();
 		} else if (obj == pause) { // Pause
@@ -321,7 +356,8 @@ public class Window extends JFrame implements ActionListener, WindowListener {
 			long len_min = TimeUnit.MICROSECONDS.toMinutes(mp.getLenght()); // Getting the full lenght in minutes
 			long pos_sec = TimeUnit.MICROSECONDS.toSeconds(mp.getPosition()); // Getting the position in seconds
 			long len_sec = TimeUnit.MICROSECONDS.toSeconds(mp.getLenght()); // Getting the full lenght in seconds
-			if (pos_min == len_min && pos_sec == len_sec) { // If the clip's end is reached the timer resets back to zero
+			if (pos_min == len_min && pos_sec == len_sec) { // If the clip's end is reached the timer resets back to
+															// zero
 				time.setText("00:00 / 00:00");
 			}
 			if (pos_sec % 60 < 10) { // Displaying the current time with proper formatting
@@ -342,20 +378,31 @@ public class Window extends JFrame implements ActionListener, WindowListener {
 	}
 
 	public void windowClosing(WindowEvent e) { // Listening for X press / alt+f4
-		int resp = JOptionPane.showConfirmDialog(null, "Do you really want to quit?", "Quit",
-				JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);  // Confirmation dialog
-		
+		int resp = JOptionPane.showConfirmDialog(null, "Do you really want to quit?", "Quit", JOptionPane.YES_NO_OPTION,
+				JOptionPane.QUESTION_MESSAGE); // Confirmation dialog
+
 		if (resp == JOptionPane.YES_OPTION) {
 			System.exit(0); // Quitting
 		}
 	}
-	
+
 	// Unnecesary but mandatory event listeners
-	public void windowOpened(WindowEvent e) {}
-	public void windowClosed(WindowEvent e) {}
-	public void windowIconified(WindowEvent e) {}
-	public void windowDeiconified(WindowEvent e) {}
-	public void windowActivated(WindowEvent e) {}
-	public void windowDeactivated(WindowEvent e) {}
+	public void windowOpened(WindowEvent e) {
+	}
+
+	public void windowClosed(WindowEvent e) {
+	}
+
+	public void windowIconified(WindowEvent e) {
+	}
+
+	public void windowDeiconified(WindowEvent e) {
+	}
+
+	public void windowActivated(WindowEvent e) {
+	}
+
+	public void windowDeactivated(WindowEvent e) {
+	}
 
 }
