@@ -29,7 +29,10 @@ public class MusicPlayer {
 
 	// Constructor that receives the selected file's path
 	public MusicPlayer(String filePath) throws LineUnavailableException, IOException {
-
+		init(filePath);
+	}
+	
+	public void init(String filePath) throws LineUnavailableException, IOException {
 		// Opening the file as an input stream
 		// No need of getResourceAsStream() because it's not a resource stored in the jar
 		try {
@@ -65,6 +68,16 @@ public class MusicPlayer {
 		clip.stop();
 		clip.close();
 		clip.flush();
+	}
+	
+	// Resets all variables so a new file can be played
+	public void kill() throws IOException {
+		clip.close();
+		clip.flush();
+		clip.drain();
+		audioInputStream.skip(audioInputStream.available());
+		length = 0L;
+		position = 0L;
 	}
 
 	// Get method of position
