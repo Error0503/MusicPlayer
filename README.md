@@ -4,3 +4,9 @@ Can only be executed with <a href="https://www.oracle.com/technetwork/java/javas
 A basic music player with simple swing GUI made as an experiment in java.
 I plan adding more features and develop this to something that' at least usable.
 For more features visit the projects tab!
+
+Main features:
+- Playing core Java supported file(s) (WAV)
+- Looping
+- Media controls (skip 10 seconds back and forward)
+- More to come...
