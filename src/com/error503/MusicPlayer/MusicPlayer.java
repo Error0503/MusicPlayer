@@ -86,7 +86,7 @@ public class MusicPlayer {
 	}
 
 	// Get method of length
-	public long getLenght() {
+	public long getLength() {
 		return length;
 	}
 

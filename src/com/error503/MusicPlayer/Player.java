@@ -1,97 +1,64 @@
 package com.error503.MusicPlayer;
 
-import com.error503.MusicPlayer.Utils;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Image;
-import java.awt.Insets;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
+import javax.imageio.ImageIO;
+import javax.sound.sampled.LineUnavailableException;
+import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
+import java.awt.*;
+import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import javax.imageio.ImageIO;
-import javax.sound.sampled.LineUnavailableException;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JProgressBar;
-import javax.swing.KeyStroke;
-import javax.swing.Timer;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.filechooser.FileFilter;
-
-import com.error503.MusicPlayer.MusicPlayer;
-
-@SuppressWarnings("serial")
-
+//@SuppressWarnings("serial")
 public class Player extends JFrame implements ActionListener, WindowListener {
 
-	private JFrame f = new JFrame();
+	private final JFrame f = new JFrame();
 
-	private JMenuBar bar = new JMenuBar();
+	private final JMenu window = new JMenu("Window");
 
-	private JMenu file = new JMenu("File");
-	private JMenu window = new JMenu("Window");
+	private final JMenuItem open = new JMenuItem("Open...");
+	private final JMenuItem connect = new JMenuItem("Connect");
+	private final JCheckBoxMenuItem repeat = new JCheckBoxMenuItem("Repeat");
 
-	private JMenuItem open = new JMenuItem("Open...");
-	private JMenuItem connect = new JMenuItem("Connect");
-	private JCheckBoxMenuItem repeat = new JCheckBoxMenuItem("Repeat");
+	private final JMenuItem credits = new JMenuItem("Credits");
+	private final JMenuItem exit = new JMenuItem("Exit");
 
-	private JMenuItem credits = new JMenuItem("Credits");
-	private JMenuItem exit = new JMenuItem("Exit");
+	private final JButton play = new JButton();
+	private final JButton pause = new JButton();
+	private final JButton stop = new JButton();
+	private final JButton reverse = new JButton();
+	private final JButton forward = new JButton();
 
-	private JButton play = new JButton();
-	private JButton pause = new JButton();
-	private JButton stop = new JButton();
-	private JButton reverse = new JButton();
-	private JButton forward = new JButton();
+	private final JLabel time = new JLabel("--:-- / --:--", JLabel.CENTER);
 
-	private JLabel time = new JLabel("--:-- / --:--", JLabel.CENTER);
-
-	private JProgressBar progress = new JProgressBar(JProgressBar.HORIZONTAL, 0);
+	private final JProgressBar progress = new JProgressBar(JProgressBar.HORIZONTAL, 0);
 
 	private String path;
 
-	private Timer timer;
+	private final Timer timer;
 	private MusicPlayer mp;
 
 	public Player() {
 
 		// Assigning icons to the buttons with scaling
 		try {
-			Image play_image = ImageIO.read(this.getClass().getResource("resources/play.jpg"));
+			Image play_image = ImageIO.read(getClass().getResource("resources/play.jpg"));
 			ImageIcon play_icon = new ImageIcon(play_image.getScaledInstance(50, 50, Image.SCALE_SMOOTH));
 
-			Image pause_image = ImageIO.read(this.getClass().getResource("resources/pause.jpg"));
+			Image pause_image = ImageIO.read(getClass().getResource("resources/pause.jpg"));
 			ImageIcon pause_icon = new ImageIcon(pause_image.getScaledInstance(50, 50, Image.SCALE_SMOOTH));
 
-			Image stop_image = ImageIO.read(this.getClass().getResource("resources/stop.jpg"));
+			Image stop_image = ImageIO.read(getClass().getResource("resources/stop.jpg"));
 			ImageIcon stop_icon = new ImageIcon(stop_image.getScaledInstance(50, 50, Image.SCALE_SMOOTH));
 
-			Image rev_image = ImageIO.read(this.getClass().getResource("resources/backward.jpg"));
+			Image rev_image = ImageIO.read(getClass().getResource("resources/backward.jpg"));
 			ImageIcon rev_icon = new ImageIcon(rev_image.getScaledInstance(50, 50, Image.SCALE_SMOOTH));
 
-			Image forw_image = ImageIO.read(this.getClass().getResource("resources/forward.jpg"));
+			Image forw_image = ImageIO.read(getClass().getResource("resources/forward.jpg"));
 			ImageIcon forw_icon = new ImageIcon(forw_image.getScaledInstance(50, 50, Image.SCALE_SMOOTH));
 
-			Image repeat_image = ImageIO.read(this.getClass().getResource("resources/repeat.png"));
+			Image repeat_image = ImageIO.read(getClass().getResource("resources/repeat.png"));
 			ImageIcon repeat_icon = new ImageIcon(repeat_image.getScaledInstance(20, 20, Image.SCALE_SMOOTH));
 
 			play.setIcon(play_icon);
@@ -116,6 +83,7 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 		exit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK));
 
 		// Filling the menu
+		JMenu file = new JMenu("File");
 		file.add(open);
 		file.add(connect);
 		file.addSeparator();
@@ -124,6 +92,7 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 		window.add(credits);
 		window.add(exit);
 
+		JMenuBar bar = new JMenuBar();
 		bar.add(file);
 		bar.add(window);
 
@@ -135,13 +104,7 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 		credits.addActionListener(this);
 		exit.addActionListener(this);
 		// repeat is a check box so it's state change should be listened for
-		repeat.addItemListener(new ItemListener() {
-
-			@Override
-			public void itemStateChanged(ItemEvent e) {
-				mp.toggleRepeat();
-			}
-		});
+		repeat.addItemListener(e -> mp.toggleRepeat());
 
 		// Action listeners to buttons
 		play.addActionListener(this);
@@ -270,11 +233,7 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 
 					String extension = Utils.getExtension(f);
 					if (extension != null) {
-						if (extension.equals(Utils.wav)) {
-							return true;
-						} else {
-							return false;
-						}
+						return extension.equals(Utils.wav);
 					}
 
 					return false;
@@ -284,7 +243,7 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 			// Showing the file chooser
 			chooser.showOpenDialog(f);
 
-			// Opening the seleted file
+			// Opening the selected file
 			if (mp == null) {
 				try {
 					path = chooser.getSelectedFile().getAbsolutePath();
@@ -298,8 +257,6 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 				} catch (IOException | LineUnavailableException err) {
 					err.printStackTrace();
 				}
-
-				timer.start();
 			} else {
 				try {
 					path = chooser.getSelectedFile().getAbsolutePath();
@@ -314,10 +271,9 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 				} catch (IOException | LineUnavailableException err) {
 					err.printStackTrace();
 				}
-				
-				timer.start();
 			}
-			
+			timer.start();
+
 		} else if (obj == connect) {
 			if (path == null) {
 				JOptionPane.showMessageDialog(null, "Please select a file before connecting", "Error",
@@ -350,14 +306,14 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 
 		} else if (obj == timer && mp.isActive()) { // Timer for controlling the progressbar
 			mp.refresh();
-			progress.setMaximum((int) mp.getLenght()); // Setting the maximum value for the progressbar
-			progress.setValue((int) mp.getPosition()); // Setting the curent value
+			progress.setMaximum((int) mp.getLength()); // Setting the maximum value for the progressbar
+			progress.setValue((int) mp.getPosition()); // Setting the current value
 			long pos_min = TimeUnit.MICROSECONDS.toMinutes(mp.getPosition()); // Getting the position in minutes
-			long len_min = TimeUnit.MICROSECONDS.toMinutes(mp.getLenght()); // Getting the full lenght in minutes
+			long len_min = TimeUnit.MICROSECONDS.toMinutes(mp.getLength()); // Getting the full length in minutes
 			long pos_sec = TimeUnit.MICROSECONDS.toSeconds(mp.getPosition()); // Getting the position in seconds
-			long len_sec = TimeUnit.MICROSECONDS.toSeconds(mp.getLenght()); // Getting the full lenght in seconds
+			long len_sec = TimeUnit.MICROSECONDS.toSeconds(mp.getLength()); // Getting the full length in seconds
 			if (pos_min == len_min && pos_sec == len_sec) { // If the clip's end is reached the timer resets back to
-															// zero
+				// zero
 				time.setText("00:00 / 00:00");
 			}
 			if (pos_sec % 60 < 10) { // Displaying the current time with proper formatting
@@ -386,7 +342,7 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 		}
 	}
 
-	// Unnecesary but mandatory event listeners
+	// Unnecessary but mandatory event listeners
 	public void windowOpened(WindowEvent e) {
 	}
 
