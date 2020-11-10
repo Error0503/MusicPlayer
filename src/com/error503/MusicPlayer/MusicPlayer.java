@@ -35,6 +35,9 @@ public class MusicPlayer {
 	public void init(String filePath) throws LineUnavailableException, IOException {
 		// Opening the file as an input stream
 		// No need of getResourceAsStream() because it's not a resource stored in the jar
+		
+		if (clip != null) kill();
+		
 		try {
 			audioInputStream = AudioSystem.getAudioInputStream(new File(filePath));
 		} catch (Exception e) {
