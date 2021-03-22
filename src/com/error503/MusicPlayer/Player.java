@@ -1,43 +1,14 @@
 package com.error503.MusicPlayer;
 
-import com.error503.MusicPlayer.Utils;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Image;
-import java.awt.Insets;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
+import javax.imageio.ImageIO;
+import javax.sound.sampled.LineUnavailableException;
+import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
+import java.awt.*;
+import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-
-import javax.imageio.ImageIO;
-import javax.sound.sampled.LineUnavailableException;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JProgressBar;
-import javax.swing.KeyStroke;
-import javax.swing.Timer;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.filechooser.FileFilter;
-
-import com.error503.MusicPlayer.MusicPlayer;
 
 @SuppressWarnings("serial")
 
@@ -62,6 +33,8 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 	private JButton stop = new JButton();
 	private JButton reverse = new JButton();
 	private JButton forward = new JButton();
+
+	private JLabel title = new JLabel("Now playing:", JLabel.CENTER);
 
 	private JLabel time = new JLabel("--:-- / --:--", JLabel.CENTER);
 
@@ -192,15 +165,24 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 		c.insets = new Insets(5, 5, 5, 5);
 		add(forward, c);
 
+		// Insert
 		c.weightx = 0;
 		c.gridwidth = 5;
 		c.gridx = 0;
 		c.gridy = 2;
 		c.insets = new Insets(5, 5, 5, 5);
+		add(title, c);
+
+
+		c.weightx = 0;
+		c.gridwidth = 5;
+		c.gridx = 0;
+		c.gridy = 3;
+		c.insets = new Insets(5, 5, 5, 5);
 		add(progress, c);
 
 		c.gridx = 0;
-		c.gridy = 3;
+		c.gridy = 4;
 		c.weightx = 0;
 		c.weighty = 0;
 		c.gridheight = 0;
@@ -299,7 +281,6 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 					err.printStackTrace();
 				}
 
-				timer.start();
 			} else {
 				try {
 					path = chooser.getSelectedFile().getAbsolutePath();
@@ -314,10 +295,11 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 				} catch (IOException | LineUnavailableException err) {
 					err.printStackTrace();
 				}
-				
-				timer.start();
+
 			}
-			
+			title.setText("Now playing: " + chooser.getSelectedFile().getName().split("\\.")[0]);
+			timer.start();
+
 		} else if (obj == connect) {
 			if (path == null) {
 				JOptionPane.showMessageDialog(null, "Please select a file before connecting", "Error",
@@ -336,6 +318,7 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 			reverse.setEnabled(false);
 			forward.setEnabled(false);
 			repeat.setEnabled(false);
+			title.setText("Now playing:");
 			time.setText("--:-- / --:--");
 			mp.stop();
 			progress.setValue(0);
