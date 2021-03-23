@@ -29,14 +29,15 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 	private final JButton stop = new JButton();
 	private final JButton reverse = new JButton();
 	private final JButton forward = new JButton();
+	private final JButton voldown = new JButton();
+	private final JButton volup = new JButton();
 
 	private final JLabel time = new JLabel("--:-- / --:--", JLabel.CENTER);
 
 	private final JProgressBar progress = new JProgressBar(JProgressBar.HORIZONTAL, 0);
-
-	private String path;
-
+	private final JProgressBar vol = new JProgressBar(JProgressBar.HORIZONTAL, -80, 6);
 	private final Timer timer;
+	private String path;
 	private MusicPlayer mp;
 
 	public Player() {
@@ -61,12 +62,20 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 			Image repeat_image = ImageIO.read(getClass().getResource("resources/repeat.png"));
 			ImageIcon repeat_icon = new ImageIcon(repeat_image.getScaledInstance(20, 20, Image.SCALE_SMOOTH));
 
+			Image vol_down_image = ImageIO.read(getClass().getResource("resources/vol_down.png"));
+			ImageIcon vol_down_icon = new ImageIcon(vol_down_image.getScaledInstance(50, 50, Image.SCALE_SMOOTH));
+
+			Image vol_up_image = ImageIO.read(getClass().getResource("resources/vol_up.png"));
+			ImageIcon vol_up_icon = new ImageIcon(vol_up_image.getScaledInstance(50, 50, Image.SCALE_SMOOTH));
+
 			play.setIcon(play_icon);
 			pause.setIcon(pause_icon);
 			stop.setIcon(stop_icon);
 			reverse.setIcon(rev_icon);
 			forward.setIcon(forw_icon);
 			repeat.setIcon(repeat_icon);
+			voldown.setIcon(vol_down_icon);
+			volup.setIcon(vol_up_icon);
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -112,14 +121,19 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 		stop.addActionListener(this);
 		reverse.addActionListener(this);
 		forward.addActionListener(this);
+		volup.addActionListener(this);
+		voldown.addActionListener(this);
 
 		// Sizing components
 		progress.setPreferredSize(new Dimension(150, 30));
+		vol.setPreferredSize(new Dimension(150, 10));
 		play.setPreferredSize(new Dimension(51, 51));
 		pause.setPreferredSize(new Dimension(51, 51));
 		stop.setPreferredSize(new Dimension(51, 51));
 		reverse.setPreferredSize(new Dimension(51, 51));
 		forward.setPreferredSize(new Dimension(51, 51));
+		voldown.setPreferredSize(new Dimension(51, 51));
+		volup.setPreferredSize(new Dimension(51, 51));
 
 		// Adding all components with appropriate properties -> c
 		c.fill = GridBagConstraints.BOTH;
@@ -129,34 +143,47 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 		c.weightx = 1.0;
 		c.weighty = 1.0;
 		c.insets = new Insets(5, 5, 5, 5);
-		add(reverse, c);
+		add(voldown, c);
 
 		c.gridx = 1;
 		c.gridy = 0;
-		c.weightx = 1.0;
 		c.insets = new Insets(5, 5, 5, 5);
-		add(play, c);
+		add(reverse, c);
 
 		c.gridx = 2;
 		c.gridy = 0;
-		c.weightx = 1.0;
 		c.insets = new Insets(5, 5, 5, 5);
-		add(pause, c);
+		add(play, c);
 
 		c.gridx = 3;
 		c.gridy = 0;
-		c.weightx = 1.0;
 		c.insets = new Insets(5, 5, 5, 5);
-		add(stop, c);
+		add(pause, c);
 
 		c.gridx = 4;
 		c.gridy = 0;
-		c.weightx = 1.0;
+		c.insets = new Insets(5, 5, 5, 5);
+		add(stop, c);
+
+		c.gridx = 5;
+		c.gridy = 0;
 		c.insets = new Insets(5, 5, 5, 5);
 		add(forward, c);
 
+		c.gridx = 6;
+		c.gridy = 0;
+		c.insets = new Insets(5, 5, 5, 5);
+		add(volup, c);
+
+		c.gridx = 0;
+		c.gridy = 1;
 		c.weightx = 0;
-		c.gridwidth = 5;
+		c.gridwidth = 7;
+		c.insets = new Insets(5, 5, 5, 5);
+		add(vol, c);
+
+		c.weightx = 0;
+		c.gridwidth = 7;
 		c.gridx = 0;
 		c.gridy = 2;
 		c.insets = new Insets(5, 5, 5, 5);
@@ -178,6 +205,8 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 		reverse.setEnabled(false);
 		forward.setEnabled(false);
 		repeat.setEnabled(false);
+		voldown.setEnabled(false);
+		volup.setEnabled(false);
 
 		// Standard JFrame part: size, default close operation, visibility, title, and
 		// blocking of resizing
@@ -205,6 +234,10 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 				| UnsupportedLookAndFeelException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public static void main(String[] args) {
+		new Player();
 	}
 
 	// Action listeners
@@ -248,12 +281,6 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 				try {
 					path = chooser.getSelectedFile().getAbsolutePath();
 					mp = new MusicPlayer(path);
-					play.setEnabled(true);
-					pause.setEnabled(true);
-					stop.setEnabled(true);
-					reverse.setEnabled(true);
-					forward.setEnabled(true);
-					repeat.setEnabled(true);
 				} catch (IOException | LineUnavailableException err) {
 					err.printStackTrace();
 				}
@@ -262,17 +289,20 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 					path = chooser.getSelectedFile().getAbsolutePath();
 					mp.kill();
 					mp.init(path);
-					play.setEnabled(true);
-					pause.setEnabled(true);
-					stop.setEnabled(true);
-					reverse.setEnabled(true);
-					forward.setEnabled(true);
-					repeat.setEnabled(true);
 				} catch (IOException | LineUnavailableException err) {
 					err.printStackTrace();
 				}
 			}
+			play.setEnabled(true);
+			pause.setEnabled(true);
+			stop.setEnabled(true);
+			reverse.setEnabled(true);
+			forward.setEnabled(true);
+			repeat.setEnabled(true);
+			voldown.setEnabled(true);
+			volup.setEnabled(true);
 			timer.start();
+			vol.setValue(0);
 
 		} else if (obj == connect) {
 			if (path == null) {
@@ -292,6 +322,8 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 			reverse.setEnabled(false);
 			forward.setEnabled(false);
 			repeat.setEnabled(false);
+			voldown.setEnabled(false);
+			volup.setEnabled(false);
 			time.setText("--:-- / --:--");
 			mp.stop();
 			progress.setValue(0);
@@ -329,6 +361,12 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 			mp.forward();
 		} else if (obj == reverse) { // Reversing the clip
 			mp.reverse();
+		} else if (obj == voldown) {
+			mp.changeVolume(-1.0f);
+			vol.setValue(vol.getValue() - 1);
+		} else if (obj == volup) {
+			mp.changeVolume(1.0f);
+			vol.setValue(vol.getValue() + 1);
 		}
 
 	}
