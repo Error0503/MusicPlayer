@@ -157,8 +157,8 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 		voldown.addActionListener(this);
 
 		// Sizing components
-		progress.setPreferredSize(new Dimension(150, 30));
-		vol.setPreferredSize(new Dimension(150, 10));
+		progress.setPreferredSize(new Dimension(150, 10));
+		vol.setPreferredSize(new Dimension(150, 5));
 		play.setPreferredSize(new Dimension(51, 51));
 		pause.setPreferredSize(new Dimension(51, 51));
 		stop.setPreferredSize(new Dimension(51, 51));
@@ -223,7 +223,7 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 
 
 		c.weightx = 0;
-		c.gridwidth = 5;
+		c.gridwidth = 7;
 		c.gridx = 0;
 		c.gridy = 3;
 		c.insets = new Insets(5, 5, 5, 5);
@@ -234,7 +234,7 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 		c.weightx = 0;
 		c.weighty = 0;
 		c.gridheight = 0;
-		c.gridwidth = 0;
+		c.gridwidth = 7;
 		c.insets = new Insets(0, 0, 0, 0);
 		add(time, c);
 
@@ -382,12 +382,12 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 
 		} else if (obj == timer && mp.isActive()) { // Timer for controlling the progressbar
 			mp.refresh();
-			progress.setMaximum((int) mp.getLenght()); // Setting the maximum value for the progressbar
+			progress.setMaximum((int) mp.getLength()); // Setting the maximum value for the progressbar
 			progress.setValue((int) mp.getPosition()); // Setting the current value
 			long pos_min = TimeUnit.MICROSECONDS.toMinutes(mp.getPosition()); // Getting the position in minutes
-			long len_min = TimeUnit.MICROSECONDS.toMinutes(mp.getLenght()); // Getting the full length in minutes
+			long len_min = TimeUnit.MICROSECONDS.toMinutes(mp.getLength()); // Getting the full length in minutes
 			long pos_sec = TimeUnit.MICROSECONDS.toSeconds(mp.getPosition()); // Getting the position in seconds
-			long len_sec = TimeUnit.MICROSECONDS.toSeconds(mp.getLenght()); // Getting the full length in seconds
+			long len_sec = TimeUnit.MICROSECONDS.toSeconds(mp.getLength()); // Getting the full length in seconds
 			if (pos_min == len_min && pos_sec == len_sec) { // If the clip's end is reached the timer resets back to
 				// zero
 				time.setText("00:00 / 00:00");
