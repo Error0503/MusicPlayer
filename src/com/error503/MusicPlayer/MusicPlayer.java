@@ -1,13 +1,9 @@
 package com.error503.MusicPlayer;
 
+import javax.sound.sampled.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.LineUnavailableException;
 
 
 // This class plays the music and controls it's behaviour.
@@ -18,7 +14,7 @@ public class MusicPlayer {
 	// Was put here to be accessible globally.
 	Clip clip;
 	AudioInputStream audioInputStream;
-	
+
 	// The length and position of the opened file in microseconds
 	long length;
 	long position;
@@ -31,7 +27,7 @@ public class MusicPlayer {
 	public MusicPlayer(String filePath) throws LineUnavailableException, IOException {
 		init(filePath);
 	}
-	
+
 	public void init(String filePath) throws LineUnavailableException, IOException {
 		// Opening the file as an input stream
 		// No need of getResourceAsStream() because it's not a resource stored in the jar
@@ -72,7 +68,7 @@ public class MusicPlayer {
 		clip.close();
 		clip.flush();
 	}
-	
+
 	// Resets all variables so a new file can be played
 	public void kill() throws IOException {
 		clip.close();
@@ -88,8 +84,12 @@ public class MusicPlayer {
 		return position;
 	}
 
+	public void setPosition(long pos) {
+		clip.setMicrosecondPosition(pos);
+	}
+
 	// Get method of length
-	public long getLenght() {
+	public long getLength() {
 		return length;
 	}
 
@@ -116,14 +116,12 @@ public class MusicPlayer {
 
 	// Updating the position
 	public void refresh() {
-		new Thread(new Runnable() {
-			public void run() {
-				// Looping the clip caused the position to overflow the length so it is checked
-				if (clip.getMicrosecondPosition() > length) {
-					position = clip.getMicrosecondPosition() - clip.getMicrosecondLength();
-				} else {
-					position = clip.getMicrosecondPosition();
-				}
+		new Thread(() -> {
+			// Looping the clip caused the position to overflow the length so it is checked
+			if (clip.getMicrosecondPosition() > length) {
+				position = clip.getMicrosecondPosition() - clip.getMicrosecondLength();
+			} else {
+				position = clip.getMicrosecondPosition();
 			}
 		}).start();
 	}
@@ -138,8 +136,11 @@ public class MusicPlayer {
 		clip.setMicrosecondPosition(position + TimeUnit.SECONDS.toMicros(10));
 	}
 
-	public void setPosition(long pos) {
-		clip.setMicrosecondPosition(pos);
+	public void changeVolume(float value) {
+		try {
+			FloatControl fc = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+			fc.setValue(fc.getValue() + value);
+		} catch (IllegalArgumentException ignored) {
+		}
 	}
-
 }

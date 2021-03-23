@@ -10,11 +10,12 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
-import java.nio.ByteBuffer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -23,7 +24,6 @@ import javax.swing.JOptionPane;
 
 public class Host extends JFrame implements ActionListener {
 
-	private FileInputStream fis = null;
 	private BufferedInputStream bis = null;
 	private DataOutputStream dos = null;
 	private ServerSocket server = null;
@@ -31,18 +31,22 @@ public class Host extends JFrame implements ActionListener {
 	private int port;
 	private String path;
 	private Thread t;
-	private MusicPlayer mp;
-	private JLabel label = new JLabel("Starting server");
 
 	private JButton close = new JButton("Close");
 
 	public Host(String path, MusicPlayer mp) {
 		this.path = path;
-		this.mp = mp;
+
+		try {
+			server = new ServerSocket(0);
+			port = server.getLocalPort();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
 		setLayout(new GridLayout(2, 1));
 
-		add(label);
+		add(new JLabel("Your server is open on port " + String.valueOf(port)));
 		add(close);
 
 		t = new Thread(new Runnable() {
@@ -87,44 +91,30 @@ public class Host extends JFrame implements ActionListener {
 					socket.close();
 				if (server != null)
 					server.close();
-			} catch (IOException er) {}
+			} catch (IOException er) {
+			}
 			System.out.println("Disconnected");
 			dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
-		} else {
-			label.setText("Your server is open on port " + String.valueOf(port));
-			pack();
-			revalidate();
-			repaint();
 		}
 	}
 
 	public void Start() throws IOException {
-		new ActionEvent(new JButton(), 0, "refresh");
-
-		server = new ServerSocket(0);
-		port = server.getLocalPort();
-
-		try {
-			System.out.println("Listening on " + port);
-			socket = server.accept();
-			System.out.println("Accepted connection: " + socket);
-			File send = new File(path);
-			byte[] array = new byte[(int) send.length()];
-			fis = new FileInputStream(send);
-			bis = new BufferedInputStream(fis);
-			bis.read(array);
-			dos = new DataOutputStream(socket.getOutputStream());
-			System.out.println("Sending " + path);
-			dos.write(array);
-			dos.flush();
-			System.out.println("Sent");
-
-			System.out.println("Sending " + mp.getPosition());
-			dos.writeLong(mp.getPosition());
-			dos.flush();
-			System.out.println("Sent");
-		} catch (SocketException e) {
-			JOptionPane.showMessageDialog(null, "Connection lost", "Error", JOptionPane.ERROR_MESSAGE);
-		}
+		
+		File f = new File(path);
+		bis = new BufferedInputStream(new FileInputStream(f));
+		byte[] data = new byte[(int) f.length()];
+		
+		bis.read(data);
+		
+		socket = server.accept();
+		System.out.println(socket + " connected");
+		
+		dos = new DataOutputStream(socket.getOutputStream());
+		System.out.println("Sending data");
+		Logger log = Logger.getLogger(this.getClass().getName());
+		log.log(Level.INFO, "Sending data");
+		dos.write(data);
+		dos.flush();
+		System.out.println("Data sent");
 	}
 }

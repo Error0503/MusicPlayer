@@ -1,6 +1,8 @@
+.git
+.idea
 .settings
+bin
+build
 .classpath
 .project
-build
-bin
-.class
+MusicPlayer.iml
