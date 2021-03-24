@@ -1,18 +1,10 @@
 package com.error503.MusicPlayer;
 
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
-import java.io.IOException;
-
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 
 public class Connect extends JFrame implements ActionListener {
 
@@ -69,31 +61,9 @@ public class Connect extends JFrame implements ActionListener {
 		Object obj = e.getSource();
 
 		if (obj == client) {
-			do {
-				try {
-					int port = 0;
-					String in = JOptionPane.showInputDialog(null, "Port", "Connect to host",
-							JOptionPane.QUESTION_MESSAGE);
-					if (in.length() < 6) {
-						port = Integer.parseInt(in);
-						new Client(port, mp);
-						dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
-						break;
-					} else {
-						JOptionPane.showMessageDialog(null, "Port number can not exceed 6 characters!", "Error",
-								JOptionPane.ERROR_MESSAGE);
-					}
-				} catch (NumberFormatException e1) {
-					JOptionPane.showMessageDialog(null, "Please input a port number", "Error",
-							JOptionPane.ERROR_MESSAGE);
-				}
-			} while (true);
+			new Client(path, mp);
 		} else if (obj == host) {
-			new Thread(new Runnable() {
-				public void run() {
-					new Host(path, mp);
-				}
-			}).start();
+			new Thread(() -> new Server(path)).start();
 			dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
 		}
 	}

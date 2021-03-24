@@ -4,6 +4,8 @@ import javax.sound.sampled.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 // This class plays the music and controls it's behaviour.
@@ -37,7 +39,7 @@ public class MusicPlayer {
 		try {
 			audioInputStream = AudioSystem.getAudioInputStream(new File(filePath));
 		} catch (Exception e) {
-			e.printStackTrace();
+			Logger.getLogger(Server.class.getName()).log(Level.INFO, "File of unsupported format");
 		}
 
 		// clip get's the selected file as a clip from AudioSystem
