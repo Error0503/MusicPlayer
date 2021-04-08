@@ -63,7 +63,7 @@ public class Connect extends JFrame implements ActionListener {
 		if (obj == client) {
 			new Client(path, mp);
 		} else if (obj == host) {
-			new Thread(() -> new Server(path)).start();
+			new Thread(() -> new Server(path, mp)).start();
 			dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
 		}
 	}

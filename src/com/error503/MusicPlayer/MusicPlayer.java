@@ -14,16 +14,16 @@ public class MusicPlayer {
 
 	// The clip that will be played later
 	// Was put here to be accessible globally.
-	Clip clip;
-	AudioInputStream audioInputStream;
+	private Clip clip;
+	private AudioInputStream audioInputStream;
 
 	// The length and position of the opened file in microseconds
-	long length;
-	long position;
+	private long length;
+	private long position;
 
 	// Loop count
 	// Set for -1 as infinite or 0 for no loop
-	int loop;
+	private int loop;
 
 	// Constructor that receives the selected file's path
 	public MusicPlayer(String filePath) throws LineUnavailableException, IOException {
@@ -113,15 +113,15 @@ public class MusicPlayer {
 		} else {
 			loop = Clip.LOOP_CONTINUOUSLY;
 		}
-		clip.loop(loop);
 	}
 
 	// Updating the position
 	public void refresh() {
 		new Thread(() -> {
 			// Looping the clip caused the position to overflow the length so it is checked
-			if (clip.getMicrosecondPosition() > length) {
-				position = clip.getMicrosecondPosition() - clip.getMicrosecondLength();
+			if (clip.getMicrosecondPosition() == length && loop == Clip.LOOP_CONTINUOUSLY) {
+				clip.setMicrosecondPosition(0);
+				clip.start();
 			} else {
 				position = clip.getMicrosecondPosition();
 			}
@@ -138,10 +138,10 @@ public class MusicPlayer {
 		clip.setMicrosecondPosition(position + TimeUnit.SECONDS.toMicros(10));
 	}
 
-	public void changeVolume(float value) {
+	public void setVolume(float value) {
 		try {
 			FloatControl fc = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
-			fc.setValue(fc.getValue() + value);
+			fc.setValue(value);
 		} catch (IllegalArgumentException ignored) {
 		}
 	}
