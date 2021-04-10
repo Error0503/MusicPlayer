@@ -3,16 +3,12 @@ package com.error503.MusicPlayer;
 import javax.imageio.ImageIO;
 import javax.sound.sampled.LineUnavailableException;
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 
 public class Player extends JFrame implements ActionListener, WindowListener {
@@ -22,11 +18,14 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 	private final JMenuBar bar = new JMenuBar();
 
 	private final JMenu file = new JMenu("File");
+	private final JMenu playM = new JMenu("Play");
 	private final JMenu window = new JMenu("Window");
 
 	private final JMenuItem open = new JMenuItem("Open...");
-	private final JMenuItem connect = new JMenuItem("Connect");
+	private final JMenuItem connect = new JMenuItem("Connect...");
+
 	private final JCheckBoxMenuItem repeat = new JCheckBoxMenuItem("Repeat");
+	private final JMenuItem loopCount = new JMenuItem("Loop count...");
 
 	private final JMenuItem credits = new JMenuItem("Credits");
 	private final JMenuItem exit = new JMenuItem("Exit");
@@ -41,7 +40,7 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 
 	private final JLabel time = new JLabel("--:-- / --:--", JLabel.CENTER);
 
-	private final JProgressBar progress = new JProgressBar(SwingConstants.HORIZONTAL, 0, 0);
+	private final JSlider progress = new JSlider(SwingConstants.HORIZONTAL, 0, 0, 0);
 	private final JSlider vol = new JSlider(JProgressBar.HORIZONTAL, -80, 6, 0);
 	private final Timer timer;
 	private String path;
@@ -119,10 +118,22 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 		reverse.addActionListener(this);
 		forward.addActionListener(this);
 		vol.addChangeListener(e -> mp.setVolume(vol.getValue()));
+		progress.addChangeListener(e -> {
+			if ((int) mp.getPosition() != progress.getValue()) {
+				mp.pause();
+				mp.setPosition(progress.getValue());
+			}
+		});
+		progress.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				mp.start();
+			}
+		});
 
 
 		// Sizing components
-		progress.setPreferredSize(new Dimension(150, 5));
+		progress.setPreferredSize(new Dimension(150, 20));
 		vol.setPreferredSize(new Dimension(150, 20));
 		play.setPreferredSize(new Dimension(51, 51));
 		pause.setPreferredSize(new Dimension(51, 51));
@@ -199,7 +210,7 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		setVisible(true);
 		setTitle("Music Player");
-		setResizable(true);
+		setResizable(false);
 		addWindowListener(this);
 
 		// Declaring a timer that will be used to refresh the clip's info every 100
@@ -288,6 +299,7 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 			vol.setEnabled(true);
 			timer.start();
 			vol.setValue(0);
+			progress.setValue(0);
 			title.setText("Now playing: " + chooser.getSelectedFile().getName());
 			timer.start();
 

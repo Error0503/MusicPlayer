@@ -25,6 +25,8 @@ public class MusicPlayer {
 	// Set for -1 as infinite or 0 for no loop
 	private int loop;
 
+	private FloatControl fc;
+
 	// Constructor that receives the selected file's path
 	public MusicPlayer(String filePath) throws LineUnavailableException, IOException {
 		init(filePath);
@@ -33,9 +35,9 @@ public class MusicPlayer {
 	public void init(String filePath) throws LineUnavailableException, IOException {
 		// Opening the file as an input stream
 		// No need of getResourceAsStream() because it's not a resource stored in the jar
-		
+
 		if (clip != null) kill();
-		
+
 		try {
 			audioInputStream = AudioSystem.getAudioInputStream(new File(filePath));
 		} catch (Exception e) {
@@ -52,6 +54,8 @@ public class MusicPlayer {
 		clip.start();
 		// The length of the sound file is stored
 		length = clip.getMicrosecondLength();
+
+		fc = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
 	}
 
 	// Re-starting the clip
@@ -139,10 +143,6 @@ public class MusicPlayer {
 	}
 
 	public void setVolume(float value) {
-		try {
-			FloatControl fc = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
-			fc.setValue(value);
-		} catch (IllegalArgumentException ignored) {
-		}
+		fc.setValue(value);
 	}
 }
