@@ -27,6 +27,7 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 	private final JCheckBoxMenuItem repeat = new JCheckBoxMenuItem("Repeat");
 	private final JMenuItem loopCount = new JMenuItem("Loop count...");
 
+	private final JCheckBoxMenuItem darkMode = new JCheckBoxMenuItem("Toggle dark mode");
 	private final JMenuItem credits = new JMenuItem("Credits");
 	private final JMenuItem exit = new JMenuItem("Exit");
 
@@ -87,18 +88,22 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 		open.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
 		connect.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
 		repeat.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, ActionEvent.CTRL_MASK));
+		loopCount.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, ActionEvent.CTRL_MASK + InputEvent.SHIFT_DOWN_MASK));
 		exit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK));
 
 		// Filling the menu
 		file.add(open);
 		file.add(connect);
-		file.addSeparator();
-		file.add(repeat);
 
+		playM.add(repeat);
+		playM.add(loopCount);
+
+		window.add(darkMode);
 		window.add(credits);
 		window.add(exit);
 
 		bar.add(file);
+		bar.add(playM);
 		bar.add(window);
 
 		setJMenuBar(bar);
@@ -106,10 +111,39 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 		// Menu items getting action listeners
 		open.addActionListener(this);
 		connect.addActionListener(this);
+
+		darkMode.addItemListener(e -> {
+			UIManager.put("control", new Color(128, 128, 128));
+			UIManager.put("info", new Color(128, 128, 128));
+			UIManager.put("nimbusBase", new Color(18, 30, 49));
+			UIManager.put("nimbusAlertYellow", new Color(248, 187, 0));
+			UIManager.put("nimbusDisabledText", new Color(128, 128, 128));
+			UIManager.put("nimbusFocus", new Color(115, 164, 209));
+			UIManager.put("nimbusGreen", new Color(176, 179, 50));
+			UIManager.put("nimbusInfoBlue", new Color(66, 139, 221));
+			UIManager.put("nimbusLightBackground", new Color(18, 30, 49));
+			UIManager.put("nimbusOrange", new Color(191, 98, 4));
+			UIManager.put("nimbusRed", new Color(169, 46, 34));
+			UIManager.put("nimbusSelectedText", new Color(255, 255, 255));
+			UIManager.put("nimbusSelectionBackground", new Color(104, 93, 156));
+			UIManager.put("text", new Color(230, 230, 230));
+
+			try {
+				UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
+			} catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException classNotFoundException) {
+				classNotFoundException.printStackTrace();
+			}
+
+			SwingUtilities.updateComponentTreeUI(this);
+		});
 		credits.addActionListener(this);
 		exit.addActionListener(this);
 		// repeat is a check box so it's state change should be listened for
 		repeat.addItemListener(e -> mp.toggleRepeat());
+		loopCount.addActionListener(e -> {
+			mp.setLoopCount(Integer.parseInt((String) JOptionPane.showInputDialog(null, "Loop count:", "Set loop count", JOptionPane.QUESTION_MESSAGE, null, null, mp.getLoopCount() + "")));
+			new ItemEvent(repeat, ItemEvent.ITEM_STATE_CHANGED, null, ItemEvent.SELECTED);
+		});
 
 		// Action listeners to buttons
 		play.addActionListener(this);
@@ -130,7 +164,6 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 				mp.start();
 			}
 		});
-
 
 		// Sizing components
 		progress.setPreferredSize(new Dimension(150, 20));
@@ -196,13 +229,25 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 		add(time, c);
 
 		// All buttons are disable until the user chooses a file to be played
+		connect.setEnabled(false);
 		play.setEnabled(false);
 		pause.setEnabled(false);
 		stop.setEnabled(false);
 		reverse.setEnabled(false);
 		forward.setEnabled(false);
 		repeat.setEnabled(false);
+		loopCount.setEnabled(false);
 		vol.setEnabled(false);
+
+		// Assigning a look and feel
+		try {
+			//UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+			UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
+			//SwingUtilities.updateComponentTreeUI(this);
+		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+				| UnsupportedLookAndFeelException e) {
+			e.printStackTrace();
+		}
 
 		// Standard JFrame part: size, default close operation, visibility, title, and
 		// blocking of resizing
@@ -219,17 +264,8 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 		timer.setRepeats(true);
 
 		// Setting the location of the window in the centre of the screen
-		setLocation((Toolkit.getDefaultToolkit().getScreenSize().width / 2) - (getSize().width / 2),
-				(Toolkit.getDefaultToolkit().getScreenSize().height / 2) - (getSize().height / 2));
+		setLocationRelativeTo(null);
 
-		// Assigning a look and feel
-		// On mac it uses it's own instead of win
-		try {
-			UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
-		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
-				| UnsupportedLookAndFeelException e) {
-			e.printStackTrace();
-		}
 	}
 
 	public static void main(String[] args) {
@@ -289,6 +325,7 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 					err.printStackTrace();
 				}
 			}
+			connect.setEnabled(true);
 			play.setEnabled(true);
 			pause.setEnabled(true);
 			stop.setEnabled(true);
@@ -296,6 +333,7 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 			forward.setEnabled(true);
 			repeat.setEnabled(true);
 			repeat.setState(false);
+			loopCount.setEnabled(true);
 			vol.setEnabled(true);
 			timer.start();
 			vol.setValue(0);
@@ -315,6 +353,7 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 		} else if (obj == pause) { // Pause
 			mp.pause();
 		} else if (obj == stop) { // Full stop, disables the control buttons and unloads the clip
+			connect.setEnabled(false);
 			play.setEnabled(false);
 			pause.setEnabled(false);
 			stop.setEnabled(false);
@@ -322,6 +361,7 @@ public class Player extends JFrame implements ActionListener, WindowListener {
 			forward.setEnabled(false);
 			repeat.setState(false);
 			repeat.setEnabled(false);
+			loopCount.setEnabled(false);
 			title.setText("Now playing:");
 			vol.setEnabled(false);
 			time.setText("--:-- / --:--");

@@ -1,6 +1,7 @@
 package com.error503.MusicPlayer;
 
 import javax.sound.sampled.*;
+import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -24,6 +25,7 @@ public class MusicPlayer {
 	// Loop count
 	// Set for -1 as infinite or 0 for no loop
 	private int loop;
+	private int loopCount = 1;
 
 	private FloatControl fc;
 
@@ -41,7 +43,8 @@ public class MusicPlayer {
 		try {
 			audioInputStream = AudioSystem.getAudioInputStream(new File(filePath));
 		} catch (Exception e) {
-			Logger.getLogger(Server.class.getName()).log(Level.INFO, "File of unsupported format");
+			Logger.getLogger(Server.class.getName()).log(Level.WARNING, "File of unsupported format");
+			JOptionPane.showMessageDialog(null, "The selected file's format is not supported!", "Error", JOptionPane.ERROR_MESSAGE);
 		}
 
 		// clip get's the selected file as a clip from AudioSystem
@@ -60,6 +63,9 @@ public class MusicPlayer {
 
 	// Re-starting the clip
 	public void start() {
+		if (clip.getMicrosecondPosition() == clip.getMicrosecondLength()) {
+			clip.setMicrosecondPosition(0);
+		}
 		clip.start();
 	}
 
@@ -83,6 +89,7 @@ public class MusicPlayer {
 		audioInputStream.skip(audioInputStream.available());
 		length = 0L;
 		position = 0L;
+		loopCount = 1;
 	}
 
 	// Get method of position
@@ -144,5 +151,13 @@ public class MusicPlayer {
 
 	public void setVolume(float value) {
 		fc.setValue(value);
+	}
+
+	public int getLoopCount() {
+		return loopCount;
+	}
+
+	public void setLoopCount(int count) {
+		loopCount = count;
 	}
 }
